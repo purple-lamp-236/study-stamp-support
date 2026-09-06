@@ -1,14 +1,19 @@
 <!doctype html>
-<html lang="ko">
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>공부도장 지원</title>
+    <title>StudyStamp Support</title>
     <!--
       앱스토어가 요구하는 `지원 URL`에 넣을 페이지다.
       개인정보 처리방침과 달리 **이 파일은 손으로 쓴다.**
       `04_development/make_terms_page.swift`는 방침 페이지만 만들어 준다.
       앱 동작이 바뀌면 아래 글도 함께 고친다.
+
+      **한 장에 한국어 · 영어 · 일본어가 모두 들어 있다.** 위쪽 탭으로 바꿔 본다.
+      처음 열 때는 **영어**를 보여 준다. 주소 뒤에 `#ko` · `#ja`를 붙이면 그 언어로 열린다.
+      세 언어 묶음(`<section data-lang>`)의 내용은 서로 같아야 한다. 한 언어를 고치면 셋을 함께 고친다.
+      탭의 모양과 동작은 방침 페이지와 같다 — 생성 스크립트의 `tabBar` · `tabScript`와 맞춘다.
     -->
     <style>
   :root { color-scheme: light; }
@@ -24,9 +29,22 @@
   p { margin: 8px 0; color: #4A4E57; }
   .note { font-size: .9rem; color: #6E727C; margin-bottom: 24px; }
   a { color: #16181D; }
+  .tabs { display: flex; gap: 8px; margin: 0 0 28px; padding: 0; }
+  .tabs button {
+    font: inherit; font-size: .95rem; padding: 6px 14px; border-radius: 999px;
+    border: 1px solid #D6D9E0; background: #FFFFFF; color: #4A4E57; cursor: pointer;
+  }
+  .tabs button[aria-selected="true"] { background: #1F4B99; border-color: #1F4B99; color: #FFFFFF; }
+  html.js section[data-lang][hidden] { display: none; }
     </style>
   </head>
   <body>
+    <nav class="tabs" aria-label="Language">
+      <button type="button" data-lang="ko" aria-selected="false">한국어</button>
+      <button type="button" data-lang="en" aria-selected="false">English</button>
+      <button type="button" data-lang="ja" aria-selected="false">日本語</button>
+    </nav>
+    <section data-lang="ko">
     <h1>공부도장 지원</h1>
     <p class="note">공부한 책을 사진으로 남기면 며칠 이어왔는지가 쌓이는 앱입니다.</p>
 
@@ -39,7 +57,7 @@
 
     <h3>공부 시간을 앱이 재 주나요?</h3>
     <p>아닙니다. 시간은 직접 고릅니다. 타이머가 없습니다.</p>
-    <p>자주 쓰는 시간은 버튼 한 번으로 넣고, 5분 단위로 늘리거나 줄일 수 있습니다.</p>
+    <p>자주 쓰는 시간은 버튼 한 번으로 넣고, 5분이나 1분 단위로 늘리거나 줄일 수 있습니다.</p>
 
     <h3>사진을 찍은 날짜로 기록이 들어가나요?</h3>
     <p>앨범에서 고른 사진에 촬영 날짜가 담겨 있으면 그 날짜로 맞춰 드립니다.</p>
@@ -78,5 +96,142 @@
     <h2>개인정보</h2>
     <p>계정을 만들지 않고 기록은 기기 안에 있습니다.</p>
     <p><a href="https://purple-lamp-236.github.io/study-stamp-privacy/">개인정보 처리방침과 이용 약관</a>에 자세히 적어 두었습니다.</p>
+    </section>
+    <section data-lang="en">
+    <h1>StudyStamp Support</h1>
+    <p class="note">An app that keeps count of how many days in a row you've studied, one photo of your book at a time.</p>
+
+    <h2>Contact</h2>
+    <p><a href="mailto:purple.lamp.236@gmail.com">purple.lamp.236@gmail.com</a></p>
+    <p>A reply may take a few days. This app is made by one person.</p>
+    <p>Telling us which iPhone you use and what happened helps us find the cause faster.</p>
+
+    <h2>Frequently asked questions</h2>
+
+    <h3>Does the app time my study sessions?</h3>
+    <p>No. You choose the time yourself. There is no timer.</p>
+    <p>Common durations are one tap away, and you can adjust in 5-minute or 1-minute steps.</p>
+
+    <h3>Is the record filed under the date the photo was taken?</h3>
+    <p>If a photo picked from your album carries a capture date, the record is set to that date.</p>
+    <p>If that's not right, you can change the date before saving.</p>
+    <p>You can also add records to past dates.</p>
+
+    <h3>If I study after midnight, which day does it count for?</h3>
+    <p>A day ends at <b>midnight</b>. A photo taken in the app after midnight counts for the new day.</p>
+    <p>If you pick a photo taken at 11:40 pm from your album after midnight, it goes to the previous day, the date stored in the photo.</p>
+    <p>To file it under the previous day, change the date before saving.</p>
+
+    <h3>Does deleting a record delete the photo too?</h3>
+    <p>Yes. You can undo for a brief moment right after deleting.</p>
+    <p>If the photo came from your album, the original stays in Photos.</p>
+    <p>That's because the app keeps its own copy of the photo you chose.</p>
+
+    <h3>Are my records backed up?</h3>
+    <p>There is no backup feature inside the app.</p>
+    <p>However, if iCloud Backup is on for your iPhone, your records and photos are included in that backup.</p>
+    <p>So your records come along when you move to a new iPhone.</p>
+    <p>With backup off, records cannot be recovered if you delete the app or lose your device.</p>
+
+    <h3>Can several people use one iPhone?</h3>
+    <p>Up to three people can keep their own records.</p>
+    <p>Tap the profile at the top right to switch. You can add people any time from the Settings tab.</p>
+
+    <h3>How is the streak counted?</h3>
+    <p>Even one record in a day keeps the streak going.</p>
+    <p>Falling short of your goal does not break the streak.</p>
+
+    <h3>My records disappeared</h3>
+    <p>If you have several profiles, first check whether you're viewing a different one.</p>
+    <p>Tap the profile at the top right of the <b>Today</b> screen to switch whose records you see.</p>
+    <p>If you still can't find them, please write to the address above.</p>
+
+    <h2>Privacy</h2>
+    <p>There is no account, and your records stay on your device.</p>
+    <p>See the <a href="https://purple-lamp-236.github.io/study-stamp-privacy/">Privacy Policy &amp; Terms of Use</a> for details.</p>
+    </section>
+    <section data-lang="ja">
+    <h1>勉強スタンプ サポート</h1>
+    <p class="note">勉強した本を写真で残すと、何日続けてきたかが積み上がっていくアプリです。</p>
+
+    <h2>お問い合わせ</h2>
+    <p><a href="mailto:purple.lamp.236@gmail.com">purple.lamp.236@gmail.com</a></p>
+    <p>返答には数日かかることがあります。一人で作っているアプリです。</p>
+    <p>どのiPhoneで何が起きたかを一緒に書いていただくと、原因を早く見つけられます。</p>
+
+    <h2>よくある質問</h2>
+
+    <h3>勉強時間はアプリが計ってくれますか？</h3>
+    <p>いいえ。時間は自分で選びます。タイマーはありません。</p>
+    <p>よく使う時間はボタン一つで入れられ、5分または1分単位で増減できます。</p>
+
+    <h3>写真を撮った日付で記録されますか？</h3>
+    <p>アルバムから選んだ写真に撮影日が含まれていれば、その日付に合わせます。</p>
+    <p>違っていれば、保存する前に日付を自分で変えられます。</p>
+    <p>過去の日付にも記録を追加できます。</p>
+
+    <h3>深夜に勉強した場合、どの日に入りますか？</h3>
+    <p>1日の区切りは<b>深夜0時</b>です。0時を過ぎてアプリで撮ると、新しい日の勉強として入ります。</p>
+    <p>夜11時40分に撮っておいた写真を深夜にアルバムから選ぶと、写真に記録された日付である前日に入ります。</p>
+    <p>前日の勉強として残したい場合は、保存する前に日付を自分で変えられます。</p>
+
+    <h3>記録を削除すると写真も削除されますか？</h3>
+    <p>一緒に削除されます。ただし、削除した直後の短い間は元に戻せます。</p>
+    <p>アルバムから選んだ写真なら、元の写真は写真アプリにそのまま残ります。</p>
+    <p>アプリは選んだ写真をコピーして別に保管しているからです。</p>
+
+    <h3>記録はバックアップされますか？</h3>
+    <p>アプリの中にバックアップ機能はありません。</p>
+    <p>ただし、iPhoneのiCloudバックアップをオンにしていれば、記録と写真はそのバックアップに含まれます。</p>
+    <p>そのため、新しいiPhoneに移すときに記録も引き継がれます。</p>
+    <p>バックアップをオフにしていると、アプリを削除したり端末を失くしたりしたときに記録を復元できません。</p>
+
+    <h3>1台のiPhoneを複数の人で使えますか？</h3>
+    <p>最大3人まで、それぞれ記録できます。</p>
+    <p>画面右上のプロフィールを押してすぐに切り替えられます。設定タブからいつでも追加できます。</p>
+
+    <h3>連続記録はどのように数えますか？</h3>
+    <p>1日に1件でも記録すれば、その日は続いたものと見なします。</p>
+    <p>勉強時間が目標に届かなくても、連続は途切れません。</p>
+
+    <h3>記録が消えました</h3>
+    <p>プロフィールが複数ある場合は、別のプロフィールを見ていないかまず確認してください。</p>
+    <p>「<b>今日</b>」画面の右上のプロフィールを押すと、今見ている人を切り替えられます。</p>
+    <p>それでも見つからない場合は、上のアドレスにお知らせください。</p>
+
+    <h2>個人情報</h2>
+    <p>アカウントは作らず、記録は端末の中にあります。</p>
+    <p>詳しくは<a href="https://purple-lamp-236.github.io/study-stamp-privacy/">プライバシーポリシー · 利用規約</a>に記載しています。</p>
+    </section>
+    <script>
+      (function () {
+        var languages = ["ko", "en", "ja"];
+        document.documentElement.classList.add("js");
+        function preferred() {
+          var fromHash = location.hash.replace("#", "");
+          return languages.indexOf(fromHash) >= 0 ? fromHash : "en";
+        }
+        function show(code) {
+          document.documentElement.lang = code;
+          document.querySelectorAll("section[data-lang]").forEach(function (section) {
+            section.hidden = section.getAttribute("data-lang") !== code;
+          });
+          document.querySelectorAll(".tabs button").forEach(function (button) {
+            button.setAttribute("aria-selected", button.getAttribute("data-lang") === code ? "true" : "false");
+          });
+          var heading = document.querySelector('section[data-lang="' + code + '"] h1');
+          if (heading) { document.title = heading.textContent; }
+        }
+        document.querySelectorAll(".tabs button").forEach(function (button) {
+          button.addEventListener("click", function () {
+            var code = button.getAttribute("data-lang");
+            history.replaceState(null, "", "#" + code);
+            show(code);
+          });
+        });
+        window.addEventListener("hashchange", function () { show(preferred()); });
+        show(preferred());
+      })();
+    </script>
   </body>
 </html>
