@@ -2,6 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <!-- 화면 모드를 스타일보다 먼저 정한다. 그래야 다크로 열 때 페이지가 한 번 밝게 번쩍이지 않는다. -->
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem("theme");
+          if (saved === "light" || saved === "dark") {
+            document.documentElement.setAttribute("data-theme", saved);
+          }
+        } catch (error) {
+          // 저장을 막아 둔 브라우저에서는 기기 설정을 그대로 따른다.
+        }
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>StudyStamp Support</title>
     <!--
@@ -10,93 +23,121 @@
       `04_development/make_terms_page.swift`는 방침 페이지만 만들어 준다.
       앱 동작이 바뀌면 아래 글도 함께 고친다.
 
-      **한 장에 한국어 · 영어 · 일본어가 모두 들어 있다.** 위쪽 탭으로 바꿔 본다.
+      **한 장에 영어 · 한국어 · 일본어가 모두 들어 있다.** 위쪽 탭으로 바꿔 본다.
+      탭과 언어 묶음의 순서는 **영어 · 한국어 · 일본어**다 (2026년 9월 19일 사용자 결정).
       처음 열 때는 **영어**를 보여 준다. 주소 뒤에 `#ko` · `#ja`를 붙이면 그 언어로 열린다.
       세 언어 묶음(`<section data-lang>`)의 내용은 서로 같아야 한다. 한 언어를 고치면 셋을 함께 고친다.
       탭의 모양과 동작은 방침 페이지와 같다 — 생성 스크립트의 `tabBar` · `tabScript`와 맞춘다.
+
+      **색은 `:root`의 변수로 모아 두었고, 라이트 · 다크 두 벌이 있다.**
+      오른쪽 위 해 · 달 버튼으로 바꾸고, 고른 값은 `localStorage`의 `theme` 자리에 남는다.
+      고른 적이 없으면 기기 설정을 따른다. 세 장이 같은 방식이라 한 곳을 고치면 셋을 함께 고친다.
     -->
     <style>
-  :root { color-scheme: light; }
+  /* 색은 모두 이름 붙인 변수에 모아 두었다. 기본값은 라이트다.
+     기기가 다크로 맞춰져 있으면 `@media (prefers-color-scheme: dark)`가 값을 바꾸고,
+     읽는 사람이 오른쪽 위 버튼으로 고르면 `html[data-theme="…"]`가 그 값을 강제한다.
+     다크 값은 03_visual_design/design_tokens.md 「앱 화면의 색 열셋」의 `다크` 열에서 가져왔다. */
+  :root,
+  html[data-theme="light"] {
+    color-scheme: light;
+    --bg: #F7F8FA;
+    --surface: #FFFFFF;
+    --ink: #16181D;
+    --text: #4A4E57;
+    --muted: #6E727C;
+    --tab-border: #D6D9E0;
+    --accent: #1F4B99;
+    --on-accent: #FFFFFF;
+    --focus: #1F4B99;
+  }
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #13171E;
+      --surface: #212934;
+      --ink: #EBEEF3;
+      --text: #C3C8D0;
+      --muted: #A2A6AD;
+      --tab-border: #344052;
+      --accent: #94B3E9;
+      --on-accent: #16181D;
+      --focus: #94B3E9;
+    }
+  }
+  html[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #13171E;
+    --surface: #212934;
+    --ink: #EBEEF3;
+    --text: #C3C8D0;
+    --muted: #A2A6AD;
+    --tab-border: #344052;
+    --accent: #94B3E9;
+    --on-accent: #16181D;
+    --focus: #94B3E9;
+  }
+  /* 화면 모드 바꾸기 버튼 — 스크롤해도 오른쪽 위에 그대로 있다.
+     자바스크립트가 꺼져 있으면 눌러도 아무 일이 없으므로 그때는 아예 보이지 않게 둔다.
+     누르는 자리는 44×44px이다. 손가락으로 누르기에 필요한 최소 크기다. */
+  .theme-toggle { display: none; }
+  html.js .theme-toggle {
+    position: fixed; top: 12px; right: 12px; z-index: 10;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 44px; height: 44px; padding: 0;
+    border-radius: 999px; border: 1px solid var(--tab-border);
+    background: var(--surface); color: var(--ink); cursor: pointer;
+  }
+  .theme-toggle:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .theme-toggle svg { width: 22px; height: 22px; display: block; }
+  .theme-toggle .sun { display: none; }
+  .theme-toggle[data-mode="dark"] .sun { display: block; }
+  .theme-toggle[data-mode="dark"] .moon { display: none; }
   body {
     margin: 0 auto; padding: 32px 20px 64px; max-width: 40rem;
-    background: #F7F8FA; color: #16181D;
+    background: var(--bg); color: var(--ink);
     font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
     line-height: 1.7; word-break: keep-all;
   }
   h1 { font-size: 1.5rem; margin: 0 0 4px; }
   h2 { font-size: 1.05rem; margin: 32px 0 8px; }
   h3 { font-size: .95rem; margin: 20px 0 4px; }
-  p { margin: 8px 0; color: #4A4E57; }
-  .note { font-size: .9rem; color: #6E727C; margin-bottom: 24px; }
-  a { color: #16181D; }
+  p { margin: 8px 0; color: var(--text); }
+  .note { font-size: .9rem; color: var(--muted); margin-bottom: 24px; }
+  a { color: var(--ink); }
   .tabs { display: flex; gap: 8px; margin: 0 0 28px; padding: 0; }
   .tabs button {
     font: inherit; font-size: .95rem; padding: 6px 14px; border-radius: 999px;
-    border: 1px solid #D6D9E0; background: #FFFFFF; color: #4A4E57; cursor: pointer;
+    border: 1px solid var(--tab-border); background: var(--surface); color: var(--text); cursor: pointer;
   }
-  .tabs button[aria-selected="true"] { background: #1F4B99; border-color: #1F4B99; color: #FFFFFF; }
+  .tabs button[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
   html.js section[data-lang][hidden] { display: none; }
     </style>
   </head>
   <body>
+    <button type="button" class="theme-toggle" aria-label="Switch light or dark">
+      <svg class="moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M20.6 14.3A8.6 8.6 0 0 1 9.7 3.4 8.6 8.6 0 1 0 20.6 14.3Z" fill="currentColor"></path>
+      </svg>
+      <svg class="sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <circle cx="12" cy="12" r="4.4" fill="currentColor"></circle>
+        <g stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="12" y1="1.6" x2="12" y2="4.2"></line>
+          <line x1="12" y1="19.8" x2="12" y2="22.4"></line>
+          <line x1="1.6" y1="12" x2="4.2" y2="12"></line>
+          <line x1="19.8" y1="12" x2="22.4" y2="12"></line>
+          <line x1="4.7" y1="4.7" x2="6.5" y2="6.5"></line>
+          <line x1="17.5" y1="17.5" x2="19.3" y2="19.3"></line>
+          <line x1="4.7" y1="19.3" x2="6.5" y2="17.5"></line>
+          <line x1="17.5" y1="6.5" x2="19.3" y2="4.7"></line>
+        </g>
+      </svg>
+    </button>
     <nav class="tabs" aria-label="Language">
-      <button type="button" data-lang="ko" aria-selected="false">한국어</button>
       <button type="button" data-lang="en" aria-selected="false">English</button>
+      <button type="button" data-lang="ko" aria-selected="false">한국어</button>
       <button type="button" data-lang="ja" aria-selected="false">日本語</button>
     </nav>
-    <section data-lang="ko">
-    <h1>공부도장 지원</h1>
-    <p class="note">공부한 책을 사진으로 남기면 며칠 이어왔는지가 쌓이는 앱입니다.</p>
-
-    <h2>문의</h2>
-    <p><a href="mailto:purple.lamp.236@gmail.com">purple.lamp.236@gmail.com</a></p>
-    <p>답을 드리는 데 며칠 걸릴 수 있습니다. 혼자 만들고 있는 앱입니다.</p>
-    <p>어떤 아이폰에서 무슨 일이 있었는지 함께 적어 주시면 찾기가 빠릅니다.</p>
-
-    <h2>자주 묻는 것</h2>
-
-    <h3>공부 시간을 앱이 재 주나요?</h3>
-    <p>아닙니다. 시간은 직접 고릅니다. 타이머가 없습니다.</p>
-    <p>자주 쓰는 시간은 버튼 한 번으로 넣고, 5분이나 1분 단위로 늘리거나 줄일 수 있습니다.</p>
-
-    <h3>사진을 찍은 날짜로 기록이 들어가나요?</h3>
-    <p>앨범에서 고른 사진에 촬영 날짜가 담겨 있으면 그 날짜로 맞춰 드립니다.</p>
-    <p>맞지 않으면 저장하기 전에 날짜를 직접 바꿀 수 있습니다.</p>
-    <p>지난 날짜에도 기록을 더할 수 있습니다.</p>
-
-    <h3>새벽에 공부하면 어느 날로 들어가나요?</h3>
-    <p>하루의 경계는 <b>자정</b>입니다. 자정이 지나 앱으로 찍으면 새 날 공부로 들어갑니다.</p>
-    <p>밤 11시 40분에 찍어 둔 사진을 새벽에 앨범에서 고르면, 사진에 담긴 날짜인 전날로 들어갑니다.</p>
-    <p>전날 공부로 남기고 싶으면 저장하기 전에 날짜를 직접 바꿀 수 있습니다.</p>
-
-    <h3>기록을 지우면 사진도 지워지나요?</h3>
-    <p>함께 지워집니다. 다만 지운 직후 잠깐 되돌릴 수 있습니다.</p>
-    <p>앨범에서 고른 사진이라면 원본은 사진 앱에 그대로 남습니다.</p>
-    <p>앱은 고른 사진을 복사해 따로 보관하기 때문입니다.</p>
-
-    <h3>기록이 백업되나요?</h3>
-    <p>앱 안에는 백업 기능이 없습니다.</p>
-    <p>다만 아이폰의 iCloud 백업을 켜 두었다면 기록과 사진이 그 백업에 함께 담깁니다.</p>
-    <p>그래서 새 아이폰으로 옮길 때 기록이 따라옵니다.</p>
-    <p>백업을 꺼 두었다면 앱을 지우거나 기기를 잃어버릴 때 기록을 되살릴 수 없습니다.</p>
-
-    <h3>한 아이폰을 여러 사람이 쓸 수 있나요?</h3>
-    <p>최대 세 명까지 각자 기록할 수 있습니다.</p>
-    <p>화면 오른쪽 위의 프로필을 눌러 바로 바꿉니다. 설정 탭에서 언제든 더할 수 있습니다.</p>
-
-    <h3>연속 기록은 어떻게 세나요?</h3>
-    <p>하루에 한 건이라도 기록하면 그날은 이어진 것으로 봅니다.</p>
-    <p>공부한 시간이 목표에 못 미쳐도 연속은 끊기지 않습니다.</p>
-
-    <h3>기록이 사라졌어요</h3>
-    <p>프로필이 여러 개라면 다른 프로필을 보고 있는지 먼저 확인해 주세요.</p>
-    <p><b>오늘</b> 화면 오른쪽 위의 프로필을 눌러 지금 보고 있는 사람을 바꿀 수 있습니다.</p>
-    <p>그래도 찾을 수 없으면 위 주소로 알려 주시기 바랍니다.</p>
-
-    <h2>개인정보</h2>
-    <p>계정을 만들지 않고 기록은 기기 안에 있습니다.</p>
-    <p><a href="https://purple-lamp-236.github.io/study-stamp-privacy/">개인정보 처리방침과 이용 약관</a>에 자세히 적어 두었습니다.</p>
-    </section>
     <section data-lang="en">
     <h1>StudyStamp Support</h1>
     <p class="note">An app that keeps count of how many days in a row you've studied, one photo of your book at a time.</p>
@@ -137,6 +178,11 @@
     <p>Up to three people can keep their own records.</p>
     <p>Tap the profile at the top right to switch. You can add people any time from the Settings tab.</p>
 
+    <h3>Does the app support dark mode?</h3>
+    <p>Yes. The app follows your device's dark mode setting.</p>
+    <p>To choose it yourself, open the Settings tab and pick <b>System</b>, <b>Light</b>, or <b>Dark</b> under <b>Appearance</b>.</p>
+    <p>What you pick stays on the device. It is the same the next time you open the app.</p>
+
     <h3>How is the streak counted?</h3>
     <p>Even one record in a day keeps the streak going.</p>
     <p>Falling short of your goal does not break the streak.</p>
@@ -149,6 +195,64 @@
     <h2>Privacy</h2>
     <p>There is no account, and your records stay on your device.</p>
     <p>See the <a href="https://purple-lamp-236.github.io/study-stamp-privacy/">Privacy Policy &amp; Terms of Use</a> for details.</p>
+    </section>
+    <section data-lang="ko">
+    <h1>공부도장 지원</h1>
+    <p class="note">공부한 책을 사진으로 남기면 며칠 이어왔는지가 쌓이는 앱입니다.</p>
+
+    <h2>문의</h2>
+    <p><a href="mailto:purple.lamp.236@gmail.com">purple.lamp.236@gmail.com</a></p>
+    <p>답을 드리는 데 며칠 걸릴 수 있습니다. 혼자 만들고 있는 앱입니다.</p>
+    <p>어떤 아이폰에서 무슨 일이 있었는지 함께 적어 주시면 찾기가 빠릅니다.</p>
+
+    <h2>자주 묻는 것</h2>
+
+    <h3>공부 시간을 앱이 재 주나요?</h3>
+    <p>아닙니다. 시간은 직접 고릅니다. 타이머가 없습니다.</p>
+    <p>자주 쓰는 시간은 버튼 한 번으로 넣고, 5분이나 1분 단위로 늘리거나 줄일 수 있습니다.</p>
+
+    <h3>사진을 찍은 날짜로 기록이 들어가나요?</h3>
+    <p>앨범에서 고른 사진에 촬영 날짜가 담겨 있으면 그 날짜로 맞춰 드립니다.</p>
+    <p>맞지 않으면 저장하기 전에 날짜를 직접 바꿀 수 있습니다.</p>
+    <p>지난 날짜에도 기록을 더할 수 있습니다.</p>
+
+    <h3>새벽에 공부하면 어느 날로 들어가나요?</h3>
+    <p>하루의 경계는 <b>자정</b>입니다. 자정이 지나 앱으로 찍으면 새 날 공부로 들어갑니다.</p>
+    <p>밤 11시 40분에 찍어 둔 사진을 새벽에 앨범에서 고르면, 사진에 담긴 날짜인 전날로 들어갑니다.</p>
+    <p>전날 공부로 남기고 싶으면 저장하기 전에 날짜를 직접 바꿀 수 있습니다.</p>
+
+    <h3>기록을 지우면 사진도 지워지나요?</h3>
+    <p>함께 지워집니다. 다만 지운 직후 잠깐 되돌릴 수 있습니다.</p>
+    <p>앨범에서 고른 사진이라면 원본은 사진 앱에 그대로 남습니다.</p>
+    <p>앱은 고른 사진을 복사해 따로 보관하기 때문입니다.</p>
+
+    <h3>기록이 백업되나요?</h3>
+    <p>앱 안에는 백업 기능이 없습니다.</p>
+    <p>다만 아이폰의 iCloud 백업을 켜 두었다면 기록과 사진이 그 백업에 함께 담깁니다.</p>
+    <p>그래서 새 아이폰으로 옮길 때 기록이 따라옵니다.</p>
+    <p>백업을 꺼 두었다면 앱을 지우거나 기기를 잃어버릴 때 기록을 되살릴 수 없습니다.</p>
+
+    <h3>한 아이폰을 여러 사람이 쓸 수 있나요?</h3>
+    <p>최대 세 명까지 각자 기록할 수 있습니다.</p>
+    <p>화면 오른쪽 위의 프로필을 눌러 바로 바꿉니다. 설정 탭에서 언제든 더할 수 있습니다.</p>
+
+    <h3>다크 모드를 지원하나요?</h3>
+    <p>네. 앱은 기기의 다크 모드 설정을 그대로 따릅니다.</p>
+    <p>직접 고르고 싶으면 설정 탭의 <b>화면 모드</b>에서 <b>시스템</b> · <b>라이트</b> · <b>다크</b> 가운데 하나를 고릅니다.</p>
+    <p>고른 값은 기기에 남습니다. 앱을 다시 열어도 그대로입니다.</p>
+
+    <h3>연속 기록은 어떻게 세나요?</h3>
+    <p>하루에 한 건이라도 기록하면 그날은 이어진 것으로 봅니다.</p>
+    <p>공부한 시간이 목표에 못 미쳐도 연속은 끊기지 않습니다.</p>
+
+    <h3>기록이 사라졌어요</h3>
+    <p>프로필이 여러 개라면 다른 프로필을 보고 있는지 먼저 확인해 주세요.</p>
+    <p><b>오늘</b> 화면 오른쪽 위의 프로필을 눌러 지금 보고 있는 사람을 바꿀 수 있습니다.</p>
+    <p>그래도 찾을 수 없으면 위 주소로 알려 주시기 바랍니다.</p>
+
+    <h2>개인정보</h2>
+    <p>계정을 만들지 않고 기록은 기기 안에 있습니다.</p>
+    <p><a href="https://purple-lamp-236.github.io/study-stamp-privacy/">개인정보 처리방침과 이용 약관</a>에 자세히 적어 두었습니다.</p>
     </section>
     <section data-lang="ja">
     <h1>勉強スタンプ サポート</h1>
@@ -190,6 +294,11 @@
     <p>最大3人まで、それぞれ記録できます。</p>
     <p>画面右上のプロフィールを押してすぐに切り替えられます。設定タブからいつでも追加できます。</p>
 
+    <h3>ダークモードに対応していますか？</h3>
+    <p>はい。アプリは端末のダークモードの設定にそのまま従います。</p>
+    <p>自分で選びたい場合は、設定タブの<b>画面モード</b>で<b>システム</b>・<b>ライト</b>・<b>ダーク</b>のいずれかを選びます。</p>
+    <p>選んだ値は端末に残ります。アプリを開き直しても同じです。</p>
+
     <h3>連続記録はどのように数えますか？</h3>
     <p>1日に1件でも記録すれば、その日は続いたものと見なします。</p>
     <p>勉強時間が目標に届かなくても、連続は途切れません。</p>
@@ -205,7 +314,7 @@
     </section>
     <script>
       (function () {
-        var languages = ["ko", "en", "ja"];
+        var languages = ["en", "ko", "ja"];
         document.documentElement.classList.add("js");
         function preferred() {
           var fromHash = location.hash.replace("#", "");
@@ -221,7 +330,44 @@
           });
           var heading = document.querySelector('section[data-lang="' + code + '"] h1');
           if (heading) { document.title = heading.textContent; }
+          // 버튼 이름도 보이는 언어에 맞춘다. 화면 낭독기가 이 글을 읽는다.
+          if (themeButton && themeLabels[code]) {
+            themeButton.setAttribute("aria-label", themeLabels[code]);
+          }
         }
+        // 화면 모드 — 오른쪽 위의 해 · 달 버튼이 맡는다.
+        // 고른 값은 이 브라우저(localStorage)의 `theme` 자리에 남고, 다음에 열 때도 그대로다.
+        // 고른 적이 없으면 기기 설정을 따른다.
+        var themeLabels = {
+          ko: "화면 모드 바꾸기",
+          en: "Switch light or dark",
+          ja: "画面モードを切り替える"
+        };
+        var themeButton = document.querySelector(".theme-toggle");
+        var darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+        function currentTheme() {
+          var chosen = document.documentElement.getAttribute("data-theme");
+          if (chosen === "light" || chosen === "dark") { return chosen; }
+          return darkQuery.matches ? "dark" : "light";
+        }
+        // 지금 다크면 해를, 라이트면 달을 보인다. 누르면 어느 쪽으로 바뀌는지 알리는 그림이다.
+        function markTheme() {
+          if (themeButton) { themeButton.setAttribute("data-mode", currentTheme()); }
+        }
+        if (themeButton) {
+          themeButton.addEventListener("click", function () {
+            var next = currentTheme() === "dark" ? "light" : "dark";
+            document.documentElement.setAttribute("data-theme", next);
+            try {
+              localStorage.setItem("theme", next);
+            } catch (error) {
+              // 저장을 막아 둔 브라우저에서는 이번 방문에만 적용된다.
+            }
+            markTheme();
+          });
+        }
+        if (darkQuery.addEventListener) { darkQuery.addEventListener("change", markTheme); }
+        markTheme();
         document.querySelectorAll(".tabs button").forEach(function (button) {
           button.addEventListener("click", function () {
             var code = button.getAttribute("data-lang");
